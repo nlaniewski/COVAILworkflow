@@ -12,3 +12,5 @@ Imports:
     data.table,
     digest,
     openxlsx
+URL: https://github.com/nlaniewski/COVAILworkflow
+BugReports: https://github.com/nlaniewski/COVAILworkflow/issues
