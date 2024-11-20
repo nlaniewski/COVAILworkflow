@@ -4,18 +4,27 @@
 \alias{manifest.batch.assign}
 \title{Add batch assignments to a BLIS COVAIL manifest}
 \usage{
-manifest.batch.assign(manifest, vials.per = 2)
+manifest.batch.assign(
+  manifest,
+  vials.per = 2,
+  seed.val = 1337,
+  randomize.batch.order = F
+)
 }
 \arguments{
 \item{manifest}{a \link[data.table]{data.table} as returned from \link{BLIS.manifest.prepare}.}
 
 \item{vials.per}{numeric; the number of sample-specific vials to assign to each batch.}
+
+\item{seed.val}{numeric; a seed value used when randomly sampling subject.ids and/or batch order.}
+
+\item{randomize.batch.order}{logical; if \code{TRUE}, the batch order will be randomized instead of ordered by subject.id + visit.}
 }
 \value{
 a list containing two \code{data.table}s; a long-data manifest and a collapsed manifest.
 }
 \description{
-Add batch assignments to a BLIS COVAIL manifest
+Samples from a BLIS COVAIL manifest, as returned by \link{BLIS.manifest.prepare}, are assigned a 'batch.seq' and a 'batch.order'; depending on study requirements, both of these assignments can be randomized.  Based on these assignments, batch-specific 'staging' boxes are pre-mapped.
 }
 \examples{
 manifest.BLIS.path<-list.files(
@@ -28,7 +37,8 @@ system.file("extdata",package="COVAILworkflow"),
 pattern="physical", full.names = TRUE
 )
 
-manifest<-BLIS.manifest.prepare(manifest.BLIS.path,manifest.physical.path)[]
+manifest<-BLIS.manifest.prepare(manifest.BLIS.path,manifest.physical.path)
 manifest.batch.assign(manifest,vials.per=2)
+manifest.batch.assign(manifest,vials.per=2,randomize.batch.order=TRUE)
 
 }

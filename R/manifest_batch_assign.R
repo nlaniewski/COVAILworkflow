@@ -1,7 +1,13 @@
 #' @title Add batch assignments to a BLIS COVAIL manifest
 #'
+#' @description
+#' Samples from a BLIS COVAIL manifest, as returned by \link{BLIS.manifest.prepare}, are assigned a 'batch.seq' and a 'batch.order'; depending on study requirements, both of these assignments can be randomized.  Based on these assignments, batch-specific 'staging' boxes are pre-mapped.
+#'
+#'
 #' @param manifest a \link[data.table]{data.table} as returned from \link{BLIS.manifest.prepare}.
 #' @param vials.per numeric; the number of sample-specific vials to assign to each batch.
+#' @param seed.val numeric; a seed value used when randomly sampling subject.ids and/or batch order.
+#' @param randomize.batch.order logical; if `TRUE`, the batch order will be randomized instead of ordered by subject.id + visit.
 #'
 #' @return a list containing two `data.table`s; a long-data manifest and a collapsed manifest.
 #' @export
@@ -17,10 +23,11 @@
 #' pattern="physical", full.names = TRUE
 #' )
 #'
-#' manifest<-BLIS.manifest.prepare(manifest.BLIS.path,manifest.physical.path)[]
+#' manifest<-BLIS.manifest.prepare(manifest.BLIS.path,manifest.physical.path)
 #' manifest.batch.assign(manifest,vials.per=2)
+#' manifest.batch.assign(manifest,vials.per=2,randomize.batch.order=TRUE)
 #'
-manifest.batch.assign<-function(manifest,vials.per=2){
+manifest.batch.assign<-function(manifest,vials.per=2,seed.val=1337,randomize.batch.order=F){
   ##batches of 27 samples
   ##27/3 stim conditions/3 visits = 3 subjects per plate 'block'
   ##two plate blocks = 6 subjects
@@ -33,7 +40,7 @@ manifest.batch.assign<-function(manifest,vials.per=2){
   for(i in seq(batch.ids)){
     subject.ids.assigned<-unlist(batch.ids)
     l<-length(which(!subject.ids %in% subject.ids.assigned))
-    set.seed(1337)
+    set.seed(seed.val)
     batch.ids[[i]]<-sample(subject.ids[!subject.ids %in% subject.ids.assigned],ifelse(l>=6,6,l))
   }
   length(unique(unlist(batch.ids)))
@@ -45,7 +52,6 @@ manifest.batch.assign<-function(manifest,vials.per=2){
     manifest[subject.id.alias %in% subject.ids,unique(sample.id)]
   })
   length(unique(unlist(batch.ids)))
-
 
   ##add batch assignments to manifest
   ##vials.per (function argument) each
@@ -76,6 +82,43 @@ manifest.batch.assign<-function(manifest,vials.per=2){
       data.table::as.data.table(dt.list)
     }),
     use.names=FALSE
+  )
+
+  ##set a key on manifest.collapsed and add batch.order
+  data.table::setkey(manifest.collapsed,batch.seq,sample.id)
+  if(randomize.batch.order){
+    manifest.collapsed[,batch.order:={set.seed(seed.val);sample(seq(.N),.N)},by=.(batch.seq)]
+    data.table::setorder(manifest.collapsed,batch.seq,batch.order)
+  }else{
+    manifest.collapsed[,batch.order:=seq(.N),by=.(batch.seq)]
+  }
+
+  ##add batch.order to manifest; this reorders manifest
+  manifest<-manifest[manifest.collapsed[,.(sample.id,batch.order)],on='sample.id']
+
+  ##add batch-specific staging
+  stage<-data.table::rbindlist(
+    lapply(
+      split(manifest[!is.na(batch.seq),.N,by=.(batch.seq,batch.order,sample.id)],by='batch.seq'),
+      function(batch){
+        box.vec<-paste(
+          row.id=rep(1:9,each=9),
+          col.id=rep(1:9,times=9),
+          sep="_"
+        )
+        #
+        for(i in batch[['batch.order']]){
+          if(!'stage.position' %in% names(batch)){
+            batch[batch.order==i,stage.position := paste0(box.vec[seq(N)],collapse = "::")]
+          }else{
+            box.vec.n<-which(box.vec %in% max(unlist(strsplit(na.omit(batch[['stage.position']]),'::'))))+2
+            box.vec.sub<-box.vec[box.vec.n:length(box.vec)]
+            batch[batch.order==i,stage.position := paste0(box.vec.sub[seq(N)],collapse = "::")]
+          }
+        }
+        #
+        return(batch[,-'N'])
+      })
   )
 
   ##return a list
