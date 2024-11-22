@@ -11,6 +11,10 @@ License: GPL (>= 3)
 Imports:
     data.table,
     digest,
-    openxlsx
+    ggplot2,
+    openxlsx,
+    slap,
+    stats
 URL: https://github.com/nlaniewski/COVAILworkflow
 BugReports: https://github.com/nlaniewski/COVAILworkflow/issues
+Remotes: nlaniewski/slap

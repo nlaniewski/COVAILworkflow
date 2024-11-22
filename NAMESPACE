@@ -2,3 +2,4 @@
 
 export(BLIS.manifest.prepare)
 export(manifest.batch.assign)
+export(plot_manifest.stage)

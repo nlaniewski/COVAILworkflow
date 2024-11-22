@@ -8,8 +8,9 @@
 #' @param vials.per numeric; the number of sample-specific vials to assign to each batch.
 #' @param seed.val numeric; a seed value used when randomly sampling subject.ids and/or batch order.
 #' @param randomize.batch.order logical; if `TRUE`, the batch order will be randomized instead of ordered by subject.id + visit.
+#' @param workbook.path file.path (character string); if defined, an excel (.xlsx) workbook will be created.
 #'
-#' @return a list containing two `data.table`s; a long-data manifest and a collapsed manifest.
+#' @return a list containing two `data.table`s; a long-data manifest (individual vials) and a collapsed manifest.
 #' @export
 #'
 #' @examples
@@ -27,7 +28,10 @@
 #' manifest.batch.assign(manifest,vials.per=2)
 #' manifest.batch.assign(manifest,vials.per=2,randomize.batch.order=TRUE)
 #'
-manifest.batch.assign<-function(manifest,vials.per=2,seed.val=1337,randomize.batch.order=F){
+#' fp<-file.path(tempdir(),"COVAIL_manifest.xlsx")
+#' manifest.batch.assign(manifest,vials.per=2,workbook.path=fp)
+#' openxlsx::read.xlsx(fp,sheet="manifest_collapsed")
+manifest.batch.assign<-function(manifest,vials.per=2,seed.val=1337,randomize.batch.order=F,workbook.path=NULL){
   ##batches of 27 samples
   ##27/3 stim conditions/3 visits = 3 subjects per plate 'block'
   ##two plate blocks = 6 subjects
@@ -111,35 +115,84 @@ manifest.batch.assign<-function(manifest,vials.per=2,seed.val=1337,randomize.bat
           if(!'stage.position' %in% names(batch)){
             batch[batch.order==i,stage.position := paste0(box.vec[seq(N)],collapse = "::")]
           }else{
-            box.vec.n<-which(box.vec %in% max(unlist(strsplit(na.omit(batch[['stage.position']]),'::'))))+2
+            box.vec.n<-which(box.vec %in% max(unlist(strsplit(stats::na.omit(batch[['stage.position']]),'::'))))+2
             box.vec.sub<-box.vec[box.vec.n:length(box.vec)]
             batch[batch.order==i,stage.position := paste0(box.vec.sub[seq(N)],collapse = "::")]
           }
         }
         #
+        batch[,stage.name:=paste("COVAIL",unique(batch.seq),sep="_")]
+        #
         return(batch[,-'N'])
       })
   )
 
-  ##return a list
-  ##long and collapse
-  return(
-    list(
-      manifest,
-      manifest.collapsed
-    )
+  ##merge
+  manifest.collapsed<-manifest.collapsed[stage[,.(sample.id,stage.name,stage.position)],on='sample.id']
+
+  ##list
+  manifests<-list(
+    manifest.vials=manifest,
+    manifest.collapsed=manifest.collapsed
   )
 
-  # ##write out as excel file
-  # ##two sheets: long, collapsed
-  # wb <- openxlsx::createWorkbook()
-  # openxlsx::addWorksheet(wb, "manifest_long")
-  # openxlsx::writeDataTable(wb, "manifest_long", x = manifest,
-  #                          tableStyle = "TableStyleLight1"
-  # )
-  # openxlsx::addWorksheet(wb, "manifest_collapsed")
-  # openxlsx::writeDataTable(wb, "manifest_collapsed", x = manifest.collapsed,
-  #                          tableStyle = "TableStyleLight1"
-  # )
-  # openxlsx::saveWorkbook(wb,file="./data_meta/manifest/manifest.xlsx")
+  ##write out an excel workbook
+  if(!is.null(workbook.path)){
+    ##write out as excel file
+    ##two sheets: vials, collapsed
+    wb <- openxlsx::createWorkbook()
+    openxlsx::addWorksheet(wb, "manifest_vials")
+    openxlsx::writeDataTable(wb, "manifest_vials", x = manifests$manifest.vials,
+                             tableStyle = "TableStyleLight1"
+    )
+    openxlsx::addWorksheet(wb, "manifest_collapsed")
+    openxlsx::writeDataTable(wb, "manifest_collapsed", x = manifests$manifest.collapsed,
+                             tableStyle = "TableStyleLight1"
+    )
+    openxlsx::saveWorkbook(wb,file=workbook.path)
+  }
+  ##
+  return(manifests)
+}
+#' @title Plot a COVAIL staging box
+#'
+#' @param manifest.collapsed as returned from \link{manifest.batch.assign}
+#'
+#' @return a \link[ggplot2]{ggplot2} object
+#' @export
+#'
+#' @examples
+#'
+plot_manifest.stage<-function(manifest.collapsed){
+  lapply(split(manifest.collasped[,.(sample.id,stage.name,stage.position)],by='stage.name',sorted = T),function(batch){
+    batch[,c('subject.id','visit') := data.table::tstrsplit(sample.id,"_",type.convert = as.factor)]
+    batch<-cbind(batch,batch[,data.table::tstrsplit(stage.position,'::')])
+    stage<-data.table::melt(
+      batch,
+      measure.vars=c('V1','V2'),
+      value.name = 'row_col'
+    )[,-c('stage.position','variable')]
+    stage[,c('row','col'):=data.table::tstrsplit(row_col,"_",type.convert=as.numeric)]
+    plate<-merge(stage,slap::plate.layout(9,9),all.y=T)
+    ##
+    slap::plate.plot(plate,row.label = 'n') +
+      ggplot2::geom_point(
+        data=stats::na.omit(plate),
+        mapping=ggplot2::aes(
+          col,
+          row,
+          color=subject.id,
+          shape=visit),
+        size=10) +
+      ggplot2::labs(
+        title=unique(plate[['stage.name']]),
+        subtitle = "Staging Box",
+        caption =
+          paste(
+            "Consulting an accompanying 'pull list' worksheet, pull the following sample vials and store them as indicated.",
+            "The order -- row,column -- indicates a batch-specifc order.",
+            sep="\n"
+          )
+      )
+  })
 }

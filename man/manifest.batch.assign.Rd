@@ -8,7 +8,8 @@ manifest.batch.assign(
   manifest,
   vials.per = 2,
   seed.val = 1337,
-  randomize.batch.order = F
+  randomize.batch.order = F,
+  workbook.path = NULL
 )
 }
 \arguments{
@@ -19,9 +20,11 @@ manifest.batch.assign(
 \item{seed.val}{numeric; a seed value used when randomly sampling subject.ids and/or batch order.}
 
 \item{randomize.batch.order}{logical; if \code{TRUE}, the batch order will be randomized instead of ordered by subject.id + visit.}
+
+\item{workbook.path}{file.path (character string); if defined, an excel (.xlsx) workbook will be created.}
 }
 \value{
-a list containing two \code{data.table}s; a long-data manifest and a collapsed manifest.
+a list containing two \code{data.table}s; a long-data manifest (individual vials) and a collapsed manifest.
 }
 \description{
 Samples from a BLIS COVAIL manifest, as returned by \link{BLIS.manifest.prepare}, are assigned a 'batch.seq' and a 'batch.order'; depending on study requirements, both of these assignments can be randomized.  Based on these assignments, batch-specific 'staging' boxes are pre-mapped.
@@ -41,4 +44,7 @@ manifest<-BLIS.manifest.prepare(manifest.BLIS.path,manifest.physical.path)
 manifest.batch.assign(manifest,vials.per=2)
 manifest.batch.assign(manifest,vials.per=2,randomize.batch.order=TRUE)
 
+fp<-file.path(tempdir(),"COVAIL_manifest.xlsx")
+manifest.batch.assign(manifest,vials.per=2,workbook.path=fp)
+openxlsx::read.xlsx(fp,sheet="manifest_collapsed")
 }
