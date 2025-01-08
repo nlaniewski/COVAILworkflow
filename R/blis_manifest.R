@@ -21,7 +21,6 @@
 #' pattern="physical", full.names = TRUE
 #' )
 #'
-#' BLIS.manifest.prepare(manifest.BLIS.path)[]
 #' BLIS.manifest.prepare(manifest.BLIS.path,manifest.physical.path)[]
 #'
 BLIS.manifest.prepare<-function(BLIS.SpecimenDetail.filepath,manifest.physical.filepath=NULL){
@@ -90,26 +89,37 @@ BLIS.manifest.prepare<-function(BLIS.SpecimenDetail.filepath,manifest.physical.f
   ##tests
   manifest[,unique(subject.id.alias)];manifest[,length(unique(subject.id.alias))]==243
 
-  ##visit.alias
+  ##re-encode visit
+  ##drop conserved digits
   ##factor; three levels
-  ##V1,V2,V3
-  manifest[,visit.alias:=factor(visit,labels=paste0("V",1:3))]
+  v<-manifest[,as.character(unique(visit))]
+  v<-sapply(v,function(v){
+    as.numeric(strsplit(v,"")[[1]])
+  },simplify = F)
+  non.conserved<-Reduce(union,lapply(as.data.frame(utils::combn(length(v),2)),function(i){
+    which(v[[i[1]]]!=v[[i[2]]])
+  }))
+  v<-lapply(v,function(v){
+    paste0("V",paste0(v[non.conserved],collapse = ""))
+  })
+  manifest[,visit.alias:=factor(visit,labels = v)]
 
   ##tests
   manifest[,length(unique(subject.id.alias))]==243
   manifest[,length(unique(visit))]==3
+  manifest[,length(unique(visit.alias))]==3
 
   ##unique sample.id
   manifest[,sample.id:=paste(subject.id.alias,visit.alias,sep="_")]
 
   ##add metadata columns
   manifest[,study.id:="COVAIL"]
-  manifest[,batch.seq:=character()]
+  # manifest[,batch.seq:=character()]
 
   ##digest test
-  if(manifest[,digest::digest(sample.id)]!="265c7fcbfb224ba1dde829c2e4c3d0ae"){
+  if(manifest[,digest::digest(sample.id)]!="591dcd3dd9708732f5b2e8c082ff7657"){
     stop("Constructed 'sample.id' does not match historic digest; check source script!")
-  }
+  }#"265c7fcbfb224ba1dde829c2e4c3d0ae"
 
   ##return manifest if 'manifest.physical.filepath' is NULL
   if(is.null(manifest.physical.filepath)){
@@ -169,7 +179,7 @@ BLIS.manifest.prepare<-function(BLIS.SpecimenDetail.filepath,manifest.physical.f
   data.table::setorder(manifest,subject.id,visit,box.row.col)
 
   ##digest test
-  if(manifest[,digest::digest(sample.id)]!="265c7fcbfb224ba1dde829c2e4c3d0ae"){
+  if(manifest[,digest::digest(sample.id)]!="591dcd3dd9708732f5b2e8c082ff7657"){
     stop("Constructed 'sample.id' does not match historic digest; check source script!")
   }else{
     return(manifest)

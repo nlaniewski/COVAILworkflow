@@ -2,4 +2,6 @@
 
 export(BLIS.manifest.prepare)
 export(manifest.batch.assign)
+export(manifest.cell.counts)
+export(manifest.stage.sheets)
 export(plot_manifest.stage)

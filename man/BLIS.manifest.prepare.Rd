@@ -31,7 +31,6 @@ system.file("extdata",package="COVAILworkflow"),
 pattern="physical", full.names = TRUE
 )
 
-BLIS.manifest.prepare(manifest.BLIS.path)[]
 BLIS.manifest.prepare(manifest.BLIS.path,manifest.physical.path)[]
 
 }

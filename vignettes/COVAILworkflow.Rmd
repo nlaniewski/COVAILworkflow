@@ -1,0 +1,169 @@
+---
+title: "COVAILworkflow"
+output:
+  rmarkdown::html_document:
+  # rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+vignette: >
+  %\VignetteIndexEntry{COVAILworkflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## COVAIL Sample Manifest
+
+The full COVAIL sample manifest is exported (.xlsx) from BLIS:
+[COVAIL manifest (BLIS)](https://blis.urmc.rochester.edu/labkey/specimen/Topham%20Lab/COVAIL_Vaccine_Study/specimens.view?showVials=true#).
+
+The manifest is pre-sorted on the column 'Global Unique Id' (ascending).
+
+To ensure reproducibility, check the MD5 hash of the exported file; the historic value is:
+
+**b00113dec261d816acd21aeddba8d183**
+
+```{r sample.manifest.xlsx.hash}
+manifest.BLIS.path<-list.files(
+  system.file("extdata",package="COVAILworkflow"),
+  pattern="SpecimenDetail", full.names = TRUE
+  )
+as.vector(tools::md5sum(manifest.BLIS.path)=="b00113dec261d816acd21aeddba8d183")
+
+if(tools::md5sum(manifest.BLIS.path)!="b00113dec261d816acd21aeddba8d183"){
+  stop("BLIS sample manifest MD5 hash does not match historic value.")
+}
+```
+
+The manifest is modified and converted to a [data.table](https://cran.r-project.org/web/packages/data.table/vignettes/datatable-intro.html).
+
+* column names are made syntactically-valid
+* ordered by *subject.id* and *visit*
+* *subject.id* is re-encoded using [digests](https://cran.r-project.org/web/packages/digest/index.html)
+* *visit* is re-encoded by dropping the conserved values (*323232##48*):
+    + *3232324948* = 'V49'
+    + *3232325148* = 'V51'
+    + *3232325348* = 'V53'
+
+```{r sample.manifest.xlsx.to.dt}
+manifest<-COVAILworkflow::BLIS.manifest.prepare(manifest.BLIS.path)
+manifest[sample.id %in% unique(sample.id)[1:3]]
+```
+
+## COVAIL Shipping Manifest
+
+The modified COVAIL sample manifest is merged with the COVAIL shipping manifest to provide an exact physical location for each sample vial.
+
+Check the MD5 hash of the file; the historic value is:
+
+**9321b1e2920f72b8f511ffe74bc45834**
+
+```{r shipping.manifest.xlsx.hash}
+manifest.physical.path<-list.files(
+  system.file("extdata",package="COVAILworkflow"),
+  pattern="manifest_physical", full.names = TRUE
+  )
+as.vector(tools::md5sum(manifest.physical.path)=="9321b1e2920f72b8f511ffe74bc45834")
+
+if(tools::md5sum(manifest.physical.path)!="9321b1e2920f72b8f511ffe74bc45834"){
+  stop("Shipping manifest MD5 hash does not match historic value.")
+}
+```
+
+* ordered by *subject.id* and *visit* and *box.row.col*
+
+```{r sample.shipping.manifest.dt}
+manifest<-COVAILworkflow::BLIS.manifest.prepare(
+  manifest.BLIS.path,
+  manifest.physical.path
+)
+manifest[sample.id %in% unique(sample.id)[1:3]]
+```
+
+## COVAIL Batch Assignment: Manifest
+
+The merged COVAIL sample/shipping manifest is used to assign samples to pre-organized batches (randomized subject selection). Both a long-form and collapsed data.table are returned. The 'collapsed' form is used to pull batch-specific samples (vials) into a pre-mapped 'staging box' according to their pre-assigned 'batch.order'.  Once assigned, the manifest is saved (.xlsx) for future reference.
+
+```{r sample.shipping.manifest.dt.batched,fig.width = 8,fig.height=8}
+manifest.batched<-COVAILworkflow::manifest.batch.assign(
+  manifest,
+  vials.per = 3,
+  add.controls = TRUE,
+  workbook.path = NULL#set path here for saving .xlsx
+)
+
+##representative example: "COVAIL_001" pull/stage list
+manifest.batched$manifest.collapsed[batch.seq=="001"]
+stage.boxes<-COVAILworkflow::plot_manifest.stage(manifest.batched$manifest.collapsed)
+##representative example: "COVAIL_001" stage box
+stage.boxes[[1]]
+```
+
+## COVAIL Batch Assignment: Batch-Specific Sheets
+
+A batch-assigned manifest is used to create batch-specific workbooks, each initially containing three sheets: a pull/stage list, a stage box plot (see above), and a 'Day 1: Thaw' sheet.  These sheets are designed to be printable to allow for efficient pulling and organization of individual batches.  In practice, a workbook is created for every batch, and then opened/printed using Excel -- here, a single representative batch ("COVAIL_001") is saved/shown.
+
+```{r manifest.batched}
+##a batched manifest was previously created
+manifest.batched.path<-list.files(
+  system.file("extdata",package="COVAILworkflow"),
+  pattern="COVAIL_manifest_batched", full.names = TRUE
+)
+as.vector(tools::md5sum(manifest.batched.path)=="71a2f44bf9ef106720b4781ef2b9a9cd")
+
+if(tools::md5sum(manifest.batched.path)!="71a2f44bf9ef106720b4781ef2b9a9cd"){
+  stop("Batched manifest MD5 hash does not match historic value.")
+}
+
+manifest_batched<-data.table::setDT(
+  openxlsx::read.xlsx(
+    manifest.batched.path,sheet="manifest_collapsed"
+  )
+)
+
+##representative example: "COVAIL_001"; create a workbook
+COVAILworkflow::manifest.stage.sheets(
+  manifest_batched[stage.name=="COVAIL_001"],
+  workbook.dir = tempdir(),
+  .overwrite = TRUE
+)
+
+##representative example: "COVAIL_001"; a pull/stage list
+data.table::setDT(
+  openxlsx::read.xlsx(
+    file.path(tempdir(),"COVAIL_001.xlsx")
+  )
+)[]
+
+##representative example: "COVAIL_001"; Day 1: Thaw sheet
+data.table::setDT(
+  openxlsx::read.xlsx(
+    file.path(tempdir(),"COVAIL_001.xlsx"),
+    sheet = 3
+  )
+)[]
+```
+
+## COVAIL Day 1: Thaw
+
+Consulting both the batch-specific pull/stage list and staging box, individual sample vials are 'pulled' and pre-organized; at the start of the batch-specific assay (Day 1: Thaw), samples are thawed into pre-labelled 15 mL tubes according to their pre-assigned batch order (see reference worksheet above; 'tube.label').
+
+```{r COVAIL_001_tubes,echo=FALSE, fig.cap="Tube labels",out.width='50%',out.height='50%'}
+tubes.path<-list.files(
+  system.file("extdata",package="COVAILworkflow"),
+  pattern="tubes.png", full.names = TRUE
+)
+suppressWarnings(knitr::include_graphics(tubes.path))
+```
+
+## COVAIL Day 2: Cell Counts and Stimulation
+
+After overnight resting, cells are counted and the results (% viable, total viable cells) are used to determine per well stimulation plate mappings.  The cell counts are appended to existing metadata
+

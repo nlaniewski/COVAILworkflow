@@ -1,6 +1,6 @@
 Package: COVAILworkflow
 Title: COVAIL Study Workflow
-Version: 0.0.0.9000
+Version: 0.0.2
 Authors@R: 
     person("Nathan", "Laniewski", , "nathan_laniewski@urmc.rochester.edu", role = c("aut", "cre"))
 Description: Workflow to manage COVAIL metadata and analysis.
@@ -18,3 +18,7 @@ Imports:
 URL: https://github.com/nlaniewski/COVAILworkflow
 BugReports: https://github.com/nlaniewski/COVAILworkflow/issues
 Remotes: nlaniewski/slap
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

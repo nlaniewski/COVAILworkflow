@@ -1,11 +1,19 @@
 #' @title Add batch assignments to a BLIS COVAIL manifest
 #'
 #' @description
-#' Samples from a BLIS COVAIL manifest, as returned by \link{BLIS.manifest.prepare}, are assigned a 'batch.seq' and a 'batch.order'; depending on study requirements, both of these assignments can be randomized.  Based on these assignments, batch-specific 'staging' boxes are pre-mapped.
+#' Samples from a BLIS COVAIL manifest, as returned by \link{BLIS.manifest.prepare}, are assigned a 'batch.seq' and a 'batch.order'; depending on study requirements, both of these assignments can be randomized.  Based on these assignments, batch-specific 'staging' boxes are pre-mapped. Current (2024-11-22) batch assignment conditions:
+#'    * 27+3; 30 unique samples per barcoded pool:
+#'      + 3 subjects + 1 Healthy Adult Donor PBMC
+#'      + 3 visits + 1 Healthy Adult Donor PBMC 'visit'
+#'      + 3 stimulation conditions
+#'    * (27x2)+(3x2); 60 unique samples per barcoded pool/per panel/plate
+#'      * 2 panels/plates (AIM, CYTOKINE)
+#'    * ((27x2)+(3x2))x2; 120 unique samples per two barcoded pools/per panel/plate
 #'
 #'
 #' @param manifest a \link[data.table]{data.table} as returned from \link{BLIS.manifest.prepare}.
 #' @param vials.per numeric; the number of sample-specific vials to assign to each batch.
+#' @param add.controls logical; default `TRUE`. Adds healthy adult control PBMCs ('HD####' placeholder name) to each batch.
 #' @param seed.val numeric; a seed value used when randomly sampling subject.ids and/or batch order.
 #' @param randomize.batch.order logical; if `TRUE`, the batch order will be randomized instead of ordered by subject.id + visit.
 #' @param workbook.path file.path (character string); if defined, an excel (.xlsx) workbook will be created.
@@ -25,52 +33,100 @@
 #' )
 #'
 #' manifest<-BLIS.manifest.prepare(manifest.BLIS.path,manifest.physical.path)
-#' manifest.batch.assign(manifest,vials.per=2)
-#' manifest.batch.assign(manifest,vials.per=2,randomize.batch.order=TRUE)
 #'
-#' fp<-file.path(tempdir(),"COVAIL_manifest.xlsx")
-#' manifest.batch.assign(manifest,vials.per=2,workbook.path=fp)
-#' openxlsx::read.xlsx(fp,sheet="manifest_collapsed")
-manifest.batch.assign<-function(manifest,vials.per=2,seed.val=1337,randomize.batch.order=F,workbook.path=NULL){
-  ##batches of 27 samples
-  ##27/3 stim conditions/3 visits = 3 subjects per plate 'block'
-  ##two plate blocks = 6 subjects
+#' fp<-file.path(tempdir(),"COVAIL_manifest_batched.xlsx")
+#' if(file.exists(fp)){file.remove(fp)}
+#' invisible(manifest.batch.assign(manifest,vials.per=3,workbook.path=fp))
+#' data.table::setDT(openxlsx::read.xlsx(fp,sheet="manifest_collapsed"))[]
+manifest.batch.assign<-function(manifest,vials.per=3,add.controls=TRUE,seed.val=1337,randomize.batch.order=FALSE,workbook.path=NULL){
+  ##batches of 27 samples + 1 healthy adult control PBMC ('add.controls' argument)
+  ##27/3 stim conditions/3 visits = 3 subjects per plate 'block' + 1 HD PBMC
+  ##two plate blocks = 6 subjects + 2 HD PBMC
   ##randomly select 6 subjects
   ##full batch assignment for 243 subjects = 243/6 = 40.5 batches
   ##assign batch.seq
   ##build a list of batch.ids
-  subject.ids<-manifest[,unique(subject.id.alias)]
-  batch.ids<-vector(mode='list',length=ceiling(length(subject.ids)/6))
-  for(i in seq(batch.ids)){
-    subject.ids.assigned<-unlist(batch.ids)
-    l<-length(which(!subject.ids %in% subject.ids.assigned))
-    set.seed(seed.val)
-    batch.ids[[i]]<-sample(subject.ids[!subject.ids %in% subject.ids.assigned],ifelse(l>=6,6,l))
-  }
-  length(unique(unlist(batch.ids)))
-  names(batch.ids)<-sprintf("%03d",seq(batch.ids))
 
-  ##expand the list of batch.ids to be sample-specific; 'subject.id.alias' and 'visit.alias'
-  ##sample.id
-  batch.ids<-lapply(batch.ids, function(subject.ids){
-    manifest[subject.id.alias %in% subject.ids,unique(sample.id)]
-  })
-  length(unique(unlist(batch.ids)))
-
-  ##add batch assignments to manifest
-  ##vials.per (function argument) each
-  invisible(
-    lapply(names(batch.ids),function(.batch.seq){
-      for(.sample.id in batch.ids[[.batch.seq]]){
-        data.table::set(
-          manifest,
-          i=manifest[,.I[sample.id==.sample.id]][seq(vials.per)],
-          j='batch.seq',
-          value=.batch.seq
-        )
-      }
-    })
+  ##subject.ids with incomplete visits
+  subject.ids.visitN2<-(
+    manifest[!duplicated(manifest[,.(subject.id.alias,visit.alias)])]
+    [,.N,by=.(subject.id.alias)][which(N!=3)][['subject.id.alias']]
   )
+  ##randomize subject.ids with incomplete visits
+  subject.ids.visitN2<-{set.seed(seed.val);sample(subject.ids.visitN2)}
+  ##randomize subject.ids with complete visits
+  subject.ids.visitN3<-{
+    set.seed(seed.val)
+    sample(manifest[!subject.id.alias %in% subject.ids.visitN2,unique(subject.id.alias)])
+  }
+  ##batch vector
+  batch.vector<-c(subject.ids.visitN3,subject.ids.visitN2)
+  names(batch.vector)<-sprintf("%03d",rep(seq(floor(length(batch.vector)/6)),each=6))
+  names(batch.vector)[is.na(names(batch.vector))]<-sprintf("%03d",as.numeric(max(stats::na.omit(names(batch.vector))))+1)
+  ##
+  dt.batch<-data.table::data.table(batch.seq=names(batch.vector),subject.id.alias=batch.vector)
+  ##
+  manifest<-manifest[dt.batch,on='subject.id.alias']
+  ##add controls
+  if(add.controls){
+    n<-manifest[,length(unique(batch.seq))]
+    dt.ctrl<-data.table::data.table(
+      subject.id=rep("HD####",n),
+      subject.id.alias=rep("HD####",n),
+      visit=manifest[,unique(batch.seq)],
+      visit.alias=manifest[,unique(batch.seq)],
+      sample.id=paste(rep("HD####",n),manifest[,unique(batch.seq)],sep = "_"),
+      study.id=rep("COVAIL",n),
+      batch.seq=manifest[,unique(batch.seq)]
+    )
+    manifest<-rbind(manifest,dt.ctrl,fill=TRUE)
+  }
+
+  ##old code chunk
+  # ##batch assign
+  # batch.ids<-vector(mode='list',length=ceiling(length(subject.ids)/6))
+  # for(i in seq(batch.ids)){
+  #   subject.ids.assigned<-unlist(batch.ids)
+  #   l<-length(which(!subject.ids %in% subject.ids.assigned))
+  #   set.seed(seed.val)
+  #   batch.ids[[i]]<-sample(subject.ids[!subject.ids %in% subject.ids.assigned],ifelse(l>=6,6,l))
+  # }
+  # length(unique(unlist(batch.ids)))
+  # names(batch.ids)<-sprintf("%03d",seq(batch.ids))
+  #
+  # ##expand the list of batch.ids to be sample-specific; 'subject.id.alias' and 'visit.alias'
+  # ##sample.id
+  # batch.ids<-lapply(batch.ids, function(subject.ids){
+  #   manifest[subject.id.alias %in% subject.ids,unique(sample.id)]
+  # })
+  # length(unique(unlist(batch.ids)))
+  #
+  # ##add batch assignments to manifest
+  # ##vials.per (function argument) each
+  # invisible(
+  #   lapply(names(batch.ids),function(.batch.seq){
+  #     for(.sample.id in batch.ids[[.batch.seq]]){
+  #       data.table::set(
+  #         manifest,
+  #         i=manifest[,.I[sample.id==.sample.id]][seq(vials.per)],
+  #         j='batch.seq',
+  #         value=.batch.seq
+  #       )
+  #     }
+  #   })
+  # )
+
+  for(.sample.id in manifest[grep("HD",sample.id,invert = T),unique(sample.id)]){
+    if(manifest[sample.id %in% .sample.id,.N]>vials.per){
+      row.index<-manifest[,.I[sample.id==.sample.id]]
+      data.table::set(
+        manifest,
+        i=row.index[3:length(row.index)],
+        j='batch.seq',
+        value = NA
+      )
+    }
+  }
 
   ##collapse batch assignments and rbindlist
   manifest.collapsed<-data.table::rbindlist(
@@ -88,8 +144,9 @@ manifest.batch.assign<-function(manifest,vials.per=2,seed.val=1337,randomize.bat
     use.names=FALSE
   )
 
-  ##set a key on manifest.collapsed and add batch.order
-  data.table::setkey(manifest.collapsed,batch.seq,sample.id)
+  # ##set a key on manifest.collapsed and add batch.order
+  # data.table::setkey(manifest.collapsed,batch.seq,sample.id)
+  ##add batch.order using existing manifest.collapsed batch.seq and sample.id order
   if(randomize.batch.order){
     manifest.collapsed[,batch.order:={set.seed(seed.val);sample(seq(.N),.N)},by=.(batch.seq)]
     data.table::setorder(manifest.collapsed,batch.seq,batch.order)
@@ -101,6 +158,7 @@ manifest.batch.assign<-function(manifest,vials.per=2,seed.val=1337,randomize.bat
   manifest<-manifest[manifest.collapsed[,.(sample.id,batch.order)],on='sample.id']
 
   ##add batch-specific staging
+  ##for 3 vials, prevent 'wrapping' (9 x 9) box
   stage<-data.table::rbindlist(
     lapply(
       split(manifest[!is.na(batch.seq),.N,by=.(batch.seq,batch.order,sample.id)],by='batch.seq'),
@@ -117,6 +175,9 @@ manifest.batch.assign<-function(manifest,vials.per=2,seed.val=1337,randomize.bat
           }else{
             box.vec.n<-which(box.vec %in% max(unlist(strsplit(stats::na.omit(batch[['stage.position']]),'::'))))+2
             box.vec.sub<-box.vec[box.vec.n:length(box.vec)]
+            if(batch[batch.order==i,N]==3&grepl("[0-9]{1}_9",box.vec.sub[1])){
+              box.vec.sub<-box.vec.sub[-1]
+            }
             batch[batch.order==i,stage.position := paste0(box.vec.sub[seq(N)],collapse = "::")]
           }
         }
@@ -153,46 +214,4 @@ manifest.batch.assign<-function(manifest,vials.per=2,seed.val=1337,randomize.bat
   }
   ##
   return(manifests)
-}
-#' @title Plot a COVAIL staging box
-#'
-#' @param manifest.collapsed as returned from \link{manifest.batch.assign}
-#'
-#' @return a \link[ggplot2]{ggplot2} object
-#' @export
-#'
-#' @examples
-#'
-plot_manifest.stage<-function(manifest.collapsed){
-  lapply(split(manifest.collasped[,.(sample.id,stage.name,stage.position)],by='stage.name',sorted = T),function(batch){
-    batch[,c('subject.id','visit') := data.table::tstrsplit(sample.id,"_",type.convert = as.factor)]
-    batch<-cbind(batch,batch[,data.table::tstrsplit(stage.position,'::')])
-    stage<-data.table::melt(
-      batch,
-      measure.vars=c('V1','V2'),
-      value.name = 'row_col'
-    )[,-c('stage.position','variable')]
-    stage[,c('row','col'):=data.table::tstrsplit(row_col,"_",type.convert=as.numeric)]
-    plate<-merge(stage,slap::plate.layout(9,9),all.y=T)
-    ##
-    slap::plate.plot(plate,row.label = 'n') +
-      ggplot2::geom_point(
-        data=stats::na.omit(plate),
-        mapping=ggplot2::aes(
-          col,
-          row,
-          color=subject.id,
-          shape=visit),
-        size=10) +
-      ggplot2::labs(
-        title=unique(plate[['stage.name']]),
-        subtitle = "Staging Box",
-        caption =
-          paste(
-            "Consulting an accompanying 'pull list' worksheet, pull the following sample vials and store them as indicated.",
-            "The order -- row,column -- indicates a batch-specifc order.",
-            sep="\n"
-          )
-      )
-  })
 }
