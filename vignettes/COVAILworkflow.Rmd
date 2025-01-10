@@ -100,8 +100,8 @@ manifest.batched<-COVAILworkflow::manifest.batch.assign(
 )
 
 ##representative example: "COVAIL_001" pull/stage list
-manifest.batched$manifest.collapsed[batch.seq=="001"]
-stage.boxes<-COVAILworkflow::plot_manifest.stage(manifest.batched$manifest.collapsed)
+manifest.batched$manifest_collapsed[batch.seq=="001"]
+stage.boxes<-COVAILworkflow::plot_manifest.stage(manifest.batched$manifest_collapsed)
 ##representative example: "COVAIL_001" stage box
 stage.boxes[[1]]
 ```
@@ -122,15 +122,10 @@ if(tools::md5sum(manifest.batched.path)!="71a2f44bf9ef106720b4781ef2b9a9cd"){
   stop("Batched manifest MD5 hash does not match historic value.")
 }
 
-manifest_batched<-data.table::setDT(
-  openxlsx::read.xlsx(
-    manifest.batched.path,sheet="manifest_collapsed"
-  )
-)
-
 ##representative example: "COVAIL_001"; create a workbook
-COVAILworkflow::manifest.stage.sheets(
-  manifest_batched[stage.name=="COVAIL_001"],
+COVAILworkflow::COVAILworkbook.initialize(
+  covail.manifest.batched.xlsx = manifest.batched.path,
+  batch.name = "COVAIL_001",
   workbook.dir = tempdir(),
   .overwrite = TRUE
 )
@@ -138,14 +133,14 @@ COVAILworkflow::manifest.stage.sheets(
 ##representative example: "COVAIL_001"; a pull/stage list
 data.table::setDT(
   openxlsx::read.xlsx(
-    file.path(tempdir(),"COVAIL_001.xlsx")
+    file.path(tempdir(),"COVAIL_001_workflow.xlsx")
   )
 )[]
 
 ##representative example: "COVAIL_001"; Day 1: Thaw sheet
 data.table::setDT(
   openxlsx::read.xlsx(
-    file.path(tempdir(),"COVAIL_001.xlsx"),
+    file.path(tempdir(),"COVAIL_001_workflow.xlsx"),
     sheet = 3
   )
 )[]
@@ -165,5 +160,5 @@ suppressWarnings(knitr::include_graphics(tubes.path))
 
 ## COVAIL Day 2: Cell Counts and Stimulation
 
-After overnight resting, cells are counted and the results (% viable, total viable cells) are used to determine per well stimulation plate mappings.  The cell counts are appended to existing metadata
+After overnight resting, cells are counted and the results (% viable, total viable cells) are used to determine per well stimulation plate mappings.  The cell counts are appended to existing metadata.
 

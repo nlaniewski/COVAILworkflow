@@ -1,6 +1,6 @@
 Package: COVAILworkflow
 Title: COVAIL Study Workflow
-Version: 0.0.2
+Version: 0.0.3
 Authors@R: 
     person("Nathan", "Laniewski", , "nathan_laniewski@urmc.rochester.edu", role = c("aut", "cre"))
 Description: Workflow to manage COVAIL metadata and analysis.

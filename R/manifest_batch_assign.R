@@ -193,8 +193,8 @@ manifest.batch.assign<-function(manifest,vials.per=3,add.controls=TRUE,seed.val=
 
   ##list
   manifests<-list(
-    manifest.vials=manifest,
-    manifest.collapsed=manifest.collapsed
+    manifest_vials=manifest,
+    manifest_collapsed=manifest.collapsed
   )
 
   ##write out an excel workbook
@@ -202,13 +202,14 @@ manifest.batch.assign<-function(manifest,vials.per=3,add.controls=TRUE,seed.val=
     ##write out as excel file
     ##two sheets: vials, collapsed
     wb <- openxlsx::createWorkbook()
-    openxlsx::addWorksheet(wb, "manifest_vials")
-    openxlsx::writeDataTable(wb, "manifest_vials", x = manifests$manifest.vials,
-                             tableStyle = "TableStyleLight1"
-    )
-    openxlsx::addWorksheet(wb, "manifest_collapsed")
-    openxlsx::writeDataTable(wb, "manifest_collapsed", x = manifests$manifest.collapsed,
-                             tableStyle = "TableStyleLight1"
+    sheets<-paste("manifest",c('vials','collapsed'),sep="_")
+    invisible(
+      lapply(sheets,function(sheet.name){
+        openxlsx::addWorksheet(wb, sheet.name)
+        openxlsx::writeDataTable(wb, sheet.name, x = manifests[[sheet.name]],
+                                 tableStyle = "TableStyleLight1"
+        )
+      })
     )
     openxlsx::saveWorkbook(wb,file=workbook.path)
   }
