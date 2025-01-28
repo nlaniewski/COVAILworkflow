@@ -20,11 +20,14 @@ utils::globalVariables(
     , "freezer"
     , "g.id"
     , "g.ids"
+    , "href"
     , "N"
     , "N.conditions"
     , "N.plates"
     , "position.in.row"
+    , "Product"
     , "rack.location"
+    , "Reagent"
     , "resuspension.volume.ul"
     , "row.id"
     , "row_col"
@@ -43,6 +46,6 @@ utils::globalVariables(
     , "visit.alias"
     , "visit.id"
     , "volume.ml"
-    , "wells"
+    , "well"
   )
 )

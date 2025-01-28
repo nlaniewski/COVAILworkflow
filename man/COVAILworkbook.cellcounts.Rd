@@ -42,28 +42,44 @@ invisible(
   )
 )
 
-#a COVAILworkbook; initialized; "COVAIL_001"
-COVAILworkbook.initialize(
-  covail.manifest.batched.xlsx = COVAIL_manifest_batched.path,
-  batch.name = "COVAIL_001",
-  workbook.dir = tempdir()
+#COVAILworkbooks; initialized
+#representative batches: "COVAIL_001" and "COVAIL_040"
+invisible(
+  lapply(paste0("COVAIL_",c("001","040")),function(covail.batch){
+    COVAILworkbook.initialize(
+      covail.manifest.batched.xlsx = COVAIL_manifest_batched.path,
+      batch.name = covail.batch,
+      workbook.dir = tempdir()
+    )
+  })
 )
 
-#update the workbook
-COVAILworkbook.cellcounts(
-  COVAILworkbook.path = list.files(
-    tempdir(),
-    full.names = TRUE,
-    pattern = "COVAIL_001_workflow.xlsx"
-  ),
-  cellometer.counts.path = list.files(
-    system.file("extdata",package="COVAILworkflow"),
-    full.names = TRUE,
-    pattern="cellometer_counts",
-  ),
-  rest.volume.ml = 2.2
+#three sheets per workbook
+lapply(
+  list.files(tempdir(),full.names=TRUE,pattern = "workflow"),
+  openxlsx::getSheetNames
 )
 
-list.files(tempdir(),pattern = "COVAIL_[0-9]{3}_workflow.xlsx")
-# shell.exec(list.files(tempdir(),pattern = "COVAIL_[0-9]{3}_workflow.xlsx",full.names = TRUE))
+#update the workbooks
+invisible(
+  lapply(
+    list.files(tempdir(),full.names=TRUE,pattern = "workflow"),
+    COVAILworkbook.cellcounts,
+    cellometer.counts.path = list.files(
+      system.file("extdata",package="COVAILworkflow"),
+      full.names = TRUE,
+      pattern="cellometer_counts",
+    ),
+    rest.volume.ml = 2.2
+  )
+)
+
+#updated workbooks
+#three sheets from COVAILworkbook.initialize(...)
+#two additional sheets from COVAILworkbook.cellcounts(...)
+lapply(
+  list.files(tempdir(),full.names=TRUE,pattern = "workflow"),
+  openxlsx::getSheetNames
+)
+# shell.exec(list.files(tempdir(),pattern = "COVAIL_040_workflow.xlsx",full.names = TRUE))
 }

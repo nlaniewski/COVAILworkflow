@@ -1,3 +1,5 @@
 ^COVAILworkflow\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
+^wip$
+^data-raw$

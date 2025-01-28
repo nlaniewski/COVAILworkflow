@@ -1,6 +1,6 @@
 Package: COVAILworkflow
 Title: COVAIL Study Workflow
-Version: 0.0.3
+Version: 0.2.0
 Authors@R: 
     person("Nathan", "Laniewski", , "nathan_laniewski@urmc.rochester.edu", role = c("aut", "cre"))
 Description: Workflow to manage COVAIL metadata and analysis.
@@ -12,6 +12,7 @@ Imports:
     data.table,
     digest,
     ggplot2,
+    kableExtra,
     openxlsx,
     slap,
     stats
@@ -22,3 +23,6 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+Depends: 
+    R (>= 2.10)
+LazyData: true

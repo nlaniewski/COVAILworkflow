@@ -98,20 +98,24 @@ COVAILworkbook.cellcounts<-function(COVAILworkbook.path,cellometer.counts.path,r
   invisible(
     lapply(list(dt.block1,dt.block2),function(block){
       row.letters<-attributes(block)$row.letters
-      for(row.i in block[,seq(.N)]){
+      col.max<-block[,.N]
+      for(col.i in seq(col.max)){
         data.table::set(
           block,
-          i = row.i,
-          j = 'wells',
-          value = paste0(row.letters,rep(row.i,3),collapse = "::")
+          i = col.i,
+          j = c('well','barcode'),
+          value = list(
+            paste0(row.letters,rep(col.i,3),collapse = "::"),
+            paste0(c(col.i,col.i+col.max,col.i+(col.max*2)),collapse = "::")
+          )
         )
       }
     })
   )
   ##row-bind the blocks
   dt.blocks<-rbind(dt.block1,dt.block2)
-  dt.blocks[grep("A|B|C",wells),block:=1]
-  dt.blocks[grep("F|G|H",wells),block:=2]
+  dt.blocks[grep("A|B|C",well),block:=1]
+  dt.blocks[grep("F|G|H",well),block:=2]
   ##
   if(is.null(COVAILworkbook.path)){
     dt.blocks[]
@@ -168,17 +172,27 @@ COVAILworkbook.cellcounts<-function(COVAILworkbook.path,cellometer.counts.path,r
       style = openxlsx::createStyle(halign = 'center')
     )
     ##plate map
-    plate<-dt.blocks[,.(stage.name,batch.order,sample.id,wells)]
+    plate<-dt.blocks[,.(stage.name,batch.order,sample.id,well,block)]
     plate[,c('subject.id','visit.id') := data.table::tstrsplit(sample.id,"_",type.convert = as.character)]
     plate[,subject.id:=factor(subject.id,levels=unique(subject.id))]
     plate[,visit.id:=factor(visit.id,levels=unique(visit.id))]
-    plate<-cbind(plate,plate[,data.table::tstrsplit(wells,'::')])
+    plate<-cbind(plate,plate[,data.table::tstrsplit(well,'::')])
     plate.melt<-data.table::melt(
       plate,
       measure.vars=grep("^V[0-9]+$",names(plate),value = T),
       value.name = 'well.id'
-    )[,-c('wells','variable')]
+    )[,-c('well','variable')]
     plate.melt<-merge(plate.melt,slap::plate.layout(8,12),all.y=T)
+    ##plot blocks; rectangles
+    rect.blocks<-vector(mode="list",length = plate[,length(unique(block))])
+    for(i in seq(plate[,length(unique(block))])){
+      rect.blocks[[i]]<-list(
+        xmin=plate.melt[block==i,min(col)]-0.5,
+        xmax=plate.melt[block==i,max(col)]+0.5,
+        ymin=plate.melt[block==i,min(row)]-0.5,
+        ymax=plate.melt[block==i,max(row)]+0.5
+      )
+    }
     ##plate plot
     plate.plot<-slap::plate.plot(plate.melt,row.label = 'l') +
       ggplot2::geom_point(
@@ -190,18 +204,19 @@ COVAILworkbook.cellcounts<-function(COVAILworkbook.path,cellometer.counts.path,r
           shape=visit.id),
         size=10) +
       ##
-      ggplot2::annotate("rect",
-                        xmin = rep(0.45,2),
-                        xmax = rep(10.55,2),
-                        ymin = c(0.45,5.45),
-                        ymax = c(3.55,8.55),
-                        color="black",
-                        fill=NA,
-                        linewidth=1.5
+      ggplot2::annotate(
+        "rect",
+        xmin=unlist(lapply(rect.blocks,'[[','xmin')),
+        xmax=unlist(lapply(rect.blocks,'[[','xmax')),
+        ymin=unlist(lapply(rect.blocks,'[[','ymin')),
+        ymax=unlist(lapply(rect.blocks,'[[','ymax')),
+        color="black",
+        fill=NA,
+        linewidth=1.5
       ) +
       ggplot2::annotate("label",
-                        x=rep(11,2),
-                        y=c(2,7),
+                        x=unlist(lapply(rect.blocks,'[[','xmax'))+0.5,
+                        y=unlist(lapply(rect.blocks,'[[','ymax'))-1.5,
                         label=c("BLOCK 1","BLOCK 2"),
                         angle=90,
                         size=8
