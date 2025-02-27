@@ -1,8 +1,12 @@
-reagents.table<-function(table.type=c('kable')){
+reagents.table<-function(reagent.type=c('AIM','CYTOKINE'),table.type=c('kable')){
   table.type<-match.arg(table.type)
   ##
+  if(reagent.type=='AIM'){
+    reagents.table<-data.table::copy(reagents.AIM)
+  }else if(reagent.type=='CYTOKINE'){
+    reagents.table<-data.table::copy(reagents.CYTOKINE)
+  }
   if(table.type=='kable'){
-    reagents.table<-data.table::copy(reagents)
     reagents.table[,Reagent := kableExtra::cell_spec(Reagent,"html",link=href)][,href:=NULL]
     reagents.table <- kableExtra::kable(
       x = reagents.table,

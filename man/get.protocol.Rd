@@ -4,12 +4,13 @@
 \alias{get.protocol}
 \title{Get a COVAIL protocol}
 \usage{
-get.protocol(protocol.name = c("staining.cytokine"))
+get.protocol(protocol.name = c("staining_CYTOKINE", "staining_AIM"))
 }
 \arguments{
 \item{protocol.name}{Character string; an alias name for a particular COVAIL protocol:
 \itemize{
-\item 'staining.cytokine'
+\item 'staining.CYTOKINE'
+\item 'staining.AIM'
 }}
 }
 \value{

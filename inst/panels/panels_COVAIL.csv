@@ -1,0 +1,71 @@
+﻿detector.order,laser,excitation,emission,detector.peak,marker,marker.alias,fluor,fluor.alias,parameter,panel.designation,clone,vendor,platform,catalog,lot,concentration,titration,location,Amount left 2/4/25
+1,UV,355,,UV1,,,,,,,,,,,,,,,
+2,UV,355,395,UV2,CD45RA,,BUV395,BUV395,CD45RA_BUV395,conserved,5H9,BD,Horizon,569489,3313308,50 ug; 250 uL; 200 ug/mL,2,surface,>100uL
+3,UV,355,,UV3,,,,,,,,,,,,,,,
+4,UV,355,,UV4,,,,,,,,,,,,,,,
+5,UV,355,,UV5,,,,,,,,,,,,,,,
+6,UV,355,,UV6,,,,,,,,,,,,,,,
+7,UV,355,500,UV7,CD45RO,,BUV496,BUV496,CD45RO_BUV496,conserved,UCHL1,BD,OptiBuild,749888,4229926,50 ug; 250 uL; 200 ug/mL,1,surface,>100uL
+8,UV,355,,UV8,,,,,,,,,,,,,,,
+9,UV,355,570,UV9,TCRgd,,BUV563,BUV563,TCRgd_BUV563,conserved,11F2,BD,OptiBuild,748534,4229925,50 ug; 250 uL; 200 ug/mL,1.5,surface,>100uL
+10,UV,355,600,UV10,CD45BC1,,SBUV605,SBUV605,CD45BC1_SBUV605,barcode,F10-89-4,Bio-Rad,,MCA87SBUV605,100006781,100 TESTS/0.5 mL,0.5,surface-barcode,>100uL
+11,UV,355,,UV11,,,,,,,,,,,,,,,
+12,UV,355,,UV12,,,,,,,,,,,,,,,
+13,UV,355,,UV13,,,,,,,,,,,,,,,
+14,UV,355,750,UV14,CD154,CD40L,BUV737,BUV737,CD154_BUV737,AIM,24-31,BD,OptiBuild,752856,4229927,50 ug; 250 uL; 200 ug/mL,1,surface,>100uL
+14,UV,355,750,UV14,IL2,,BUV737,BUV737,IL2_BUV737,CYTOKINE,MQ1-17H12,BD,Horizon,612836,4218722,250uL; 5uL/test; 100ug/mL,0.5,intracellular,>100uL
+15,UV,355,,UV15,,,,,,,,,,,,,,,
+16,UV,355,800,UV16,CD8,,BUV805,BUV805,CD8_BUV805,conserved,RPA-T8,BD,Horizon,568334,4235549,50 ug; 250 uL; 200 ug/mL,0.5,surface,>100uL
+17,V,405,420,V1,CD197,CCR7,BV421,BV421,CD197_BV421,conserved,G043H7,BioLegend,,353208,B419079,70 ug; 500 uL; 140 ug/mL,1.5,surface,>100uL
+18,V,405,,V2,,,,,,,,,,,,,,,
+19,V,405,450,V3,CD45BC2,,PacificBlue,Pacific Blue,CD45BC2_PacificBlue,barcode,HI30,BioLegend,,304029,B416226,200 ug; 500 uL; 400 ug/mL,1.083333333,surface-barcode,>100uL
+20,V,405,,V4,,,,,,,,,,,,,,,
+21,V,405,500,V5,CD45BC3,,SBV475,SBV475,CD45BC3_SBV475,barcode,F10-89-4,Bio-Rad,,MCA87SBV475,100005836,100 TESTS/0.5 mL,0.5,surface-barcode,>100uL
+22,V,405,,V6,,,,,,,,,,,,,,,
+23,V,405,,V7,,,,,,,,,,,,,,,
+24,V,405,,V8,,,,,,,,,,,,,,,
+25,V,405,,V9,,,,,,,,,,,,,,,
+26,V,405,600,V10,CD57,,BV605,BV605,CD57_BV605,conserved,QA17A04,BioLegend,,393304,B401784,25 ug; 500 uL; 50 ug/mL,0.5,surface,>100uL
+27,V,405,660,V11,CD193,CCR3,BV650,BV650,CD193_BV650,conserved,5.00E+08,BD,OptiBuild,743060,4229924,50 ug; 250 uL; 200 ug/mL,1,surface,>100uL
+28,V,405,,V12,,,,,,,,,,,,,,,
+29,V,405,700,V13,CD45BC4,,BV711,BV711,CD45BC4_BV711,barcode,HI30,BioLegend,,304050,B396110,25 ug; 500 uL; 50 ug/mL,0.25,surface-barcode,>100uL
+30,V,405,750,V14,CD127,IL-7Ra,BV750,BV750,CD127_BV750,conserved,A019D5,BioLegend,,351370,B412410,50 ug; 500 uL; 100 ug/mL,1.5,surface,>100uL
+31,V,405,780,V15,CD56,,BV785,BV785,CD56_BV785,conserved,5.1H11,Biolegend,,362550,B427547,500uL; 5uL/test; 100ug/mL,0.5,surface,>100uL
+32,V,405,,V16,,,,,,,,,,,,,,,
+33,B,488,,B1,,,,,,,,,,,,,,,
+34,B,488,520,B2,CD199,CCR9,KIRAVIABlue520,KIRAVIA Blue 520,CD199_KIRAVIABlue520,conserved,L053E8,Biolegend,,358926,B399669,500uL; 5uL/test; 200ug/mL,1.5,surface,>100uL
+35,B,488,550,B3,CD49a,,RB545,RB545,CD49a_RB545,conserved,SR84,BD,Optibuild,756339,4229929,50 ug; 250uL; 200ug/mL,0.5,surface,>100uL
+36,B,488,,B4,,,,,,,,,,,,,,,
+37,B,488,,B5,,,,,,,,,,,,,,,
+38,B,488,613,B6,CD25,,RB613,RB613,CD25_RB613,AIM,2A3,BD,Horizon,571097,4332483,12.5 ug; 500 uL; 25 ug/mL,1,surface,>100uL
+38,B,488,613,B6,GranzymeB,,RB613,RB613,GranzymeB_RB613,CYTOKINE,GB11,BD,Horizon,571117,4002426,500uL; 5uL/test; 100ug/mL,0.5,intracellular,>100uL
+39,B,488,,B7,,,,,,,,,,,,,,,
+40,B,488,680,B8,CD45BC5,,PerCP,PerCP,CD45BC5_PerCP,barcode,HI30,BioLegend,,304026,B402465,100 ug; 500 uL; 200 ug/mL,0.25,surface-barcode,>100uL
+41,B,488,,B9,,,,,,,,,,,,,,,
+42,B,488,700,B10,CD95,FAS,PerCPeFluor710,PerCP-eFluor 710,CD95_PerCPeFluor710,conserved,DX2,Invitrogen,,46-0959-42,2608779,100test(5uL(0.86ug/mL)/test),1.5,surface,>100uL
+43,B,488,,B11,,,,,,,,,,,,,,,
+44,B,488,750,B12,CD3,,RB744,RB744,CD3_RB744,conserved,UCHT1,BD,Horizon,570470,3251800,500uL; 5uL/test; 50ug/mL,0.5,intracellular (CYTOKINE)/surface (AIM),>100uL
+45,B,488,,B13,,,,,,,,,,,,,,,
+46,B,488,800,B14,CD4,,PerCPFire806,PerCP-Fire 806,CD4_PerCPFire806,conserved,SK3,Biolegend,,344694,B428454,500uL;5uL/test: 100ug/mL,0.5,surface,>100uL
+46,B,488,800,B14,CD69,,RB780,RB780,CD69_RB780,conserved,FN50,BD,Horizon,568755,4022440,125uL; 5uL/test; 200ug/mL,0.5,intracellular (CYTOKINE)/surface (AIM),55uL
+47,YG,561,570,YG1,CD134,OX40,PE,PE,CD134_PE,AIM,Ber-ACT35,Biolegend,,350004,B372687,500uL; 5uL/test; 200ug/mL,1,surface,>100uL
+47,YG,561,570,YG1,CD183,CXCR3,RY586,RY586,CD183_RY586,conserved,1C6/CXCR3,BD,OptiBuild,753595,4229928,50ug; 250uL; 200ug/mL,0.5,surface,>100uL
+47,YG,561,570,YG1,TNFa,,PE,PE,TNFa_PE,CYTOKINE,MAb11,BD,Pharmingen,554513,4078201,100ug; 500uL; 200ug/mL,0.25,intracellular,>100uL
+48,YG,561,,YG2,,,,,,,,,,,,,,,
+49,YG,561,600,YG3,CD137,4-1BB,PEDazzle594,PE-Dazzle 594,CD137_PEDazzle594,AIM,4B4-1,Biolegend,,309826,B367330,500uL; 5uL/test; 200ug/mL,1,surface,>100uL
+49,YG,561,600,YG3,IFNg,,PEDazzle594,PE-Dazzle 594,IFNg_PEDazzle594,CYTOKINE,B27,Biolegend,,506530,B394449,500uL; 5uL/test; 25ug/mL ,0.5,intracellular,>100uL
+50,YG,561,660,YG4,CD103,,PEFire640,PE-Fire 640,CD103_PEFire640,conserved,Ber-ACT8,Biolegend,,350244,B364348,500uL; 5uL/test; 50ug/mL,0.5,surface,>100uL
+51,YG,561,,YG5,,,,,,,,,,,,,,,
+52,YG,561,,YG6,,,,,,,,,,,,,,,
+53,YG,561,700,YG7,CD45BC6,,SBY720,SBY720,CD45BC6_SBY720,barcode,F10-89-4,Bio-Rad,,MCA87SBY720,100007331,100 TESTS/0.5 mL,0.75,surface-barcode,>100uL
+54,YG,561,,YG8,,,,,,,,,,,,,,,
+55,YG,561,780,YG9,CD122,IL-2Rb,PECy7,PE-Cy7,CD122_PECy7,conserved,TU27,Biolegend,,339014,B409390,500uL; 5uL/test; 100ug/mL,1,surface,>100uL
+56,YG,561,,YG10,,,,,,,,,,,,,,,
+57,R,640,,R1,,,,,,,,,,,,,,,
+58,R,640,680,R2,Ia4b7,Integrin alpha4 beta7,AlexaFluor647,Alexa Fluor 647,Ia4b7_AlexaFluor647,conserved,Vedolizumab297.rMAb,BD,Pharmingen,571600,4127812,500uL; 5uL/test; 25ug/mL ,1.5,surface,>100uL
+59,R,640,690,R3,CD45BC7,,SparkNIR685,Spark NIR 685,CD45BC7_SparkNIR685,barcode,HI30,BioLegend,,304098,B420407,25 ug; 500 uL; 50 ug/mL,0.25,surface-barcode,>100uL
+60,R,640,738,R4,Viability,,LIVEDEADScarlet,LIVE DEAD Scarlet,Viability_LIVEDEADScarlet,conserved,,Invitrogen,,L34988A,289778,,2.263888889,viability,
+61,R,640,,R5,,,,,,,,,,,,,,,
+62,R,640,,R6,,,,,,,,,,,,,,,
+63,R,640,780,R7,CD27,,APCH7,APC-H7,CD27_APCH7,conserved,M-T271,BD,Pharmingen,560222,3275290,500uL; 5uL/test; 50ug/mL,1,surface,>100uL
+64,R,640,800,R8,KLRG1,,APCFire810,APC-Fire 810,KLRG1_APCFire810,conserved,SA231A2,Biolegend,,367732,B423435,500uL; 5uL/test; 50ug/mL,1,surface,>100uL

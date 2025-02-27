@@ -12,7 +12,11 @@ buffers<-rbind(
   c(
     Buffer ="Viability Buffer",
     'Buffer Alias' = "VB",
-    Constituents = "1 part SBn + 3 parts 1x PBS; 0.5% FBS final"
+    Constituents = paste(
+      "1 part SBn + 3 parts 1x PBS; 0.5% FBS final",
+      "0.8 mL SBn + 2.4 mL 1x PBS",
+      sep="\n"
+    )
   ),
   c(
     Buffer ="BD Cytofix/CytoPerm",
@@ -32,5 +36,6 @@ buffers<-rbind(
 #   Constituents = ""
 ##
 buffers<-data.table::data.table(buffers)
+buffers.CYTOKINE<-data.table::copy(buffers)
+buffers.AIM<-data.table::copy(buffers)[Buffer!="BD Permeabilization Buffer (1x)"]
 ##
-usethis::use_data(buffers, overwrite = TRUE, internal = TRUE)

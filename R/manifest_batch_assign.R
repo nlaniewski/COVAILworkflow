@@ -52,21 +52,27 @@ manifest.batch.assign<-function(manifest,vials.per=3,add.controls=TRUE,seed.val=
     manifest[!duplicated(manifest[,.(subject.id.alias,visit.alias)])]
     [,.N,by=.(subject.id.alias)][which(N!=3)][['subject.id.alias']]
   )
+
   ##randomize subject.ids with incomplete visits
   subject.ids.visitN2<-{set.seed(seed.val);sample(subject.ids.visitN2)}
+
   ##randomize subject.ids with complete visits
   subject.ids.visitN3<-{
     set.seed(seed.val)
     sample(manifest[!subject.id.alias %in% subject.ids.visitN2,unique(subject.id.alias)])
   }
+
   ##batch vector
   batch.vector<-c(subject.ids.visitN3,subject.ids.visitN2)
   names(batch.vector)<-sprintf("%03d",rep(seq(floor(length(batch.vector)/6)),each=6))
   names(batch.vector)[is.na(names(batch.vector))]<-sprintf("%03d",as.numeric(max(stats::na.omit(names(batch.vector))))+1)
+
   ##
   dt.batch<-data.table::data.table(batch.seq=names(batch.vector),subject.id.alias=batch.vector)
+
   ##
   manifest<-manifest[dt.batch,on='subject.id.alias']
+
   ##add controls
   if(add.controls){
     n<-manifest[,length(unique(batch.seq))]
@@ -82,40 +88,7 @@ manifest.batch.assign<-function(manifest,vials.per=3,add.controls=TRUE,seed.val=
     manifest<-rbind(manifest,dt.ctrl,fill=TRUE)
   }
 
-  ##old code chunk
-  # ##batch assign
-  # batch.ids<-vector(mode='list',length=ceiling(length(subject.ids)/6))
-  # for(i in seq(batch.ids)){
-  #   subject.ids.assigned<-unlist(batch.ids)
-  #   l<-length(which(!subject.ids %in% subject.ids.assigned))
-  #   set.seed(seed.val)
-  #   batch.ids[[i]]<-sample(subject.ids[!subject.ids %in% subject.ids.assigned],ifelse(l>=6,6,l))
-  # }
-  # length(unique(unlist(batch.ids)))
-  # names(batch.ids)<-sprintf("%03d",seq(batch.ids))
-  #
-  # ##expand the list of batch.ids to be sample-specific; 'subject.id.alias' and 'visit.alias'
-  # ##sample.id
-  # batch.ids<-lapply(batch.ids, function(subject.ids){
-  #   manifest[subject.id.alias %in% subject.ids,unique(sample.id)]
-  # })
-  # length(unique(unlist(batch.ids)))
-  #
-  # ##add batch assignments to manifest
-  # ##vials.per (function argument) each
-  # invisible(
-  #   lapply(names(batch.ids),function(.batch.seq){
-  #     for(.sample.id in batch.ids[[.batch.seq]]){
-  #       data.table::set(
-  #         manifest,
-  #         i=manifest[,.I[sample.id==.sample.id]][seq(vials.per)],
-  #         j='batch.seq',
-  #         value=.batch.seq
-  #       )
-  #     }
-  #   })
-  # )
-
+  ##
   for(.sample.id in manifest[grep("HD",sample.id,invert = T),unique(sample.id)]){
     if(manifest[sample.id %in% .sample.id,.N]>vials.per){
       row.index<-manifest[,.I[sample.id==.sample.id]]
@@ -146,6 +119,7 @@ manifest.batch.assign<-function(manifest,vials.per=3,add.controls=TRUE,seed.val=
 
   # ##set a key on manifest.collapsed and add batch.order
   # data.table::setkey(manifest.collapsed,batch.seq,sample.id)
+
   ##add batch.order using existing manifest.collapsed batch.seq and sample.id order
   if(randomize.batch.order){
     manifest.collapsed[,batch.order:={set.seed(seed.val);sample(seq(.N),.N)},by=.(batch.seq)]

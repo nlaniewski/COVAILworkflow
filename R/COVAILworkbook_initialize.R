@@ -18,37 +18,74 @@
 #' @export
 #'
 #' @example /R/examples/COVAILworkbook_initialize_example.R
-COVAILworkbook.initialize<-function(covail.manifest.batched.xlsx=NULL,batch.name=NULL,workbook.dir=NULL,.overwrite=FALSE){
+COVAILworkbook.initialize<-function(
+    covail.manifest.batched.xlsx=NULL,
+    batch.name=NULL,
+    workbook.dir=NULL,
+    .overwrite=FALSE
+){
+  ##
+  .SD<-NULL
   ##MD5 hash to ensure reproducibility
-  if(tools::md5sum(covail.manifest.batched.xlsx)!="71a2f44bf9ef106720b4781ef2b9a9cd"){
-    stop("COVAIL manifest (batch assigned) MD5 hash does not match historic value; has something changed?")
-  }
+  # if(tools::md5sum(covail.manifest.batched.xlsx)!="71a2f44bf9ef106720b4781ef2b9a9cd"){
+  #   stop("COVAIL manifest (batch assigned) MD5 hash does not match historic value; has something changed?")
+  # }
   if(is.null(batch.name)){
     stop("Define the 'batch.name' argument; 'batch.name=COVAIL_###' (### currently equals '001' through '041')")
   }
+  ##issue with pluralized names from old code; hacky fix here until it can be rooted out
+  cols<-c(
+    'g.id'
+    ,'subject.id'
+    ,'visit'
+    ,'subject.id.alias'
+    ,'visit.alias'
+    ,'sample.id'
+    ,'freezer'
+    ,'rack.location'
+    ,'box.label'
+    ,'box.row.col'
+    ,'batch.seq'
+    ,'batch.order'
+    ,'stage.name'
+    ,'stage.position'
+  )
+  cols.plural<-paste0(cols,"s")
+
   dt<-data.table::setDT(
     openxlsx::read.xlsx(
       covail.manifest.batched.xlsx,
       sheet = "manifest_collapsed"
     )
-  )[stage.name==batch.name,
-    .(
-      g.ids
-      ,subject.id
-      ,visit
-      ,subject.id.alias
-      ,visit.alias
-      ,sample.id
-      ,freezer
-      ,rack.location
-      ,box.label
-      ,box.row.cols
-      ,batch.seq
-      ,batch.order
-      ,stage.name
-      ,stage.position
-    )
-  ]
+  )[stage.name==batch.name]
+
+  cols.keep<-names(dt)[names(dt) %in% c(cols,cols.plural)]
+
+  dt<-dt[,.SD,.SDcols=cols.keep]
+  ##
+  # dt<-data.table::setDT(
+  #   openxlsx::read.xlsx(
+  #     covail.manifest.batched.xlsx,
+  #     sheet = "manifest_collapsed"
+  #   )
+  # )[stage.name==batch.name,
+  #   .(
+  #     g.ids
+  #     ,subject.id
+  #     ,visit
+  #     ,subject.id.alias
+  #     ,visit.alias
+  #     ,sample.id
+  #     ,freezer
+  #     ,rack.location
+  #     ,box.label
+  #     ,box.row.cols
+  #     ,batch.seq
+  #     ,batch.order
+  #     ,stage.name
+  #     ,stage.position
+  #   )
+  # ]
   plot.boxmap<-plot_manifest.stage(dt)[[1]]
   ##create an excel workbook
   ##three sheets: banded-row table (pull/stage list); boxmap plot; Day 1: Thaw

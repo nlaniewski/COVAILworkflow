@@ -52,5 +52,6 @@ reagents<-rbind(
 # )
 ##
 reagents<-data.table::data.table(reagents)
+reagents.CYTOKINE<-data.table::copy(reagents)
+reagents.AIM<-data.table::copy(reagents)[Reagent!="BD Perm/Wash Buffer"]
 ##
-usethis::use_data(reagents, overwrite = TRUE, internal = TRUE)

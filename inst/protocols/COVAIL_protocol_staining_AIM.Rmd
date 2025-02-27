@@ -1,5 +1,5 @@
 ---
-title: "COVAIL Protocol:  \nStaining for Full Spectrum Cytometry  \nPanel: CYTOKINE\n"
+title: "COVAIL Protocol:  \nStaining for Full Spectrum Cytometry  \nPanel: AIM\n"
 author: "Nathan Laniewski"
 date: "`r Sys.Date()`"
 output:
@@ -30,7 +30,7 @@ knitr::opts_chunk$set(echo = FALSE)
 protocol.hash<-tools::md5sum(
   list.files(
     system.file("protocols",package="COVAILworkflow"),
-    pattern="COVAIL_protocol_staining_CYTOKINE.Rmd",
+    pattern="COVAIL_protocol_staining_AIM.Rmd",
     full.names = TRUE
   )
 )
@@ -41,13 +41,13 @@ protocol.hash.alias<-paste(substr(protocol.hash,1,4),substr(protocol.hash,29,32)
 # Reagents
 
 ```{r reagents.table}
-COVAILworkflow:::reagents.table(reagent.type = 'CYTOKINE',table.type = 'kable')
+COVAILworkflow:::reagents.table(reagent.type = 'AIM',table.type = 'kable')
 ```
 
 # Buffers
 
 ```{r buffers.table}
-COVAILworkflow:::buffers.table(buffers.type = 'CYTOKINE')
+COVAILworkflow:::buffers.table(buffers.type = 'AIM')
 ```
 
 # Panels
@@ -55,21 +55,13 @@ COVAILworkflow:::buffers.table(buffers.type = 'CYTOKINE')
 ## Panel: CD45 Barcodes
 ```{r barcodes.panel}
 "Placeholder CD45 Barcodes"
-# knitr::kable(list(COVAILworkflow:::panel.table()))
 ```
 
 ## Panel: Extracellular/Surface
 Tests = 2.2
 ```{r extracellular.panel}
-COVAILworkflow:::panel.kable()$buffer$CYTOKINE.extracellular
-COVAILworkflow:::panel.kable()$mix$CYTOKINE.extracellular
-```
-
-## Panel: Intracellular
-Tests = 2.2
-```{r intracellular.panel}
-COVAILworkflow:::panel.kable()$buffer$CYTOKINE.intracellular
-COVAILworkflow:::panel.kable()$mix$CYTOKINE.intracellular
+COVAILworkflow:::panel.kable()$buffer$AIM.extracellular
+COVAILworkflow:::panel.kable()$mix$AIM.extracellular
 ```
 
 # Protocol
@@ -90,9 +82,9 @@ COVAILworkflow:::panel.kable()$mix$CYTOKINE.intracellular
 #. $\square$ *WASH*: 200 $\mu$L **SBn**; spin 300xg, 5 minutes, room-temperature; multichannel aspirate supernatant
 #. $\square$ *WASH*: 200 $\mu$L **SBn**; spin 300xg, 5 minutes, room-temperature; multichannel aspirate supernatant
 #. $\square$ Pool each **Barcode Block** into respective, pre-labeled 15 mL tube
-    + NAMING CONVENTION: *Study_Batch_BCpool_BLOCKnumber_PANEL*; 
-    + Example: *COVAIL_001_BCpool_BLOCK1_CYTOKINE*
-    + Example: *COVAIL_001_BCpool_BLOCK2_CYTOKINE*
+    + NAMING CONVENTION: *Study_Batch_PANEL_BLOCK#*; 
+    + Example: *COVAIL_001_AIM_BLOCK1*
+    + Example: *COVAIL_002_AIM_BLOCK2*
 #. $\square$ Spin 300xg, 5 minutes, room-temperature
 #. $\square$ Vacuum aspirate supernatant
     + NOTE: leave ~20 $\mu$L residual
@@ -114,17 +106,12 @@ COVAILworkflow:::panel.kable()$mix$CYTOKINE.intracellular
 #. $\square$ Immediately vortex (setting 5) for a full 10 second count
     + NOTE: ensures maximal, fixed single-cells
 #. $\square$ *Vortex-Genie Shaker*: 20 minutes, room-temperature
-    + NOTE: prepare **ICS Mix**
 
   **!!!All subsequent spins: 800xg!!!**
+  **Use SB (without nuclease) for washes**
     
-#. $\square$ *WASH*: 2 mL **PB**; spin 800xg, 5 minutes, room-temperate; vacuum aspirate supernatant
-#. $\square$ *WASH*: 2 mL **PB**; spin 800xg, 5 minutes, room-temperate; vacuum aspirate supernatant
-#. $\square$ Stain: **ICS Mix**; 50 $\mu$L
-    + NOTE: Fully disrupt cell pellet in remaining residual before staining
-#. $\square$ *Vortex-Genie Shaker*: 30 minutes, room-temperature
-#. $\square$ *WASH*: 2 mL **PB**; spin 800xg, 5 minutes, room-temperate; vacuum aspirate supernatant
-#. $\square$ *WASH*: 2 mL **PB**; spin 800xg, 5 minutes, room-temperate; vacuum aspirate supernatant
+#. $\square$ *WASH*: 2 mL **SB**; spin 800xg, 5 minutes, room-temperate; vacuum aspirate supernatant
+#. $\square$ *WASH*: 3 mL **SB**; spin 800xg, 5 minutes, room-temperate; vacuum aspirate supernatant
     + NOTE: Before spinning, take an aliquot for counting: 5 $\mu$L of cells/pool + 15 $\mu$L **SB**
     + NOTE: Cellometer K2; assay: *1.6% fixed*; dilution factor: 4
 #. $\square$ Resuspend in **SB** at a concentration of 15E6/mL; store at 4^o^C (fridge)
