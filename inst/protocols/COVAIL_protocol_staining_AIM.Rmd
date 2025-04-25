@@ -47,7 +47,7 @@ hashes<-lapply(list(body=protocol.hash.body,panel=protocol.hash.panel),function(
   paste(substr(i,1,4),substr(i,nchar(i)-3,nchar(i)),sep="...")
 })
 ```
-### Version: `r protocol.hash.alias`
+### Version:<br/>Body:   `r hashes$body`<br/>Panel:  `r hashes$panel`
 
 # Reagents
 
