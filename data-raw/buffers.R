@@ -27,6 +27,11 @@ buffers<-rbind(
     Buffer ="BD Permeabilization Buffer (1x)",
     'Buffer Alias' = "PB",
     Constituents = "10x BD Permeabilization Buffer diluted to 1x in UltraPure Distilled Water"
+  ),
+  c(
+    Buffer ="RPMI 1640 + FBS + antibiotics",
+    'Buffer Alias' = "R10",
+    Constituents = "RPMI 1640 + 10% FBS + 1x Penicillin-Streptomycin (445 mL + 50 mL + 5 mL); 0.2 um filter sterilized"
   )
 )
 ##
@@ -34,6 +39,7 @@ buffers<-rbind(
 #   Buffer ="",
 #   'Buffer Alias' = "",
 #   Constituents = ""
+# )
 ##
 buffers<-data.table::data.table(buffers)
 buffers.CYTOKINE<-data.table::copy(buffers)

@@ -27,16 +27,27 @@ knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ```{r protocol.version}
-protocol.hash<-tools::md5sum(
+##hash check body (.rmd file itself)
+##hash check panel
+protocol.hash.body<-tools::md5sum(
   list.files(
     system.file("protocols",package="COVAILworkflow"),
     pattern="COVAIL_protocol_staining_CYTOKINE.Rmd",
     full.names = TRUE
   )
 )
-protocol.hash.alias<-paste(substr(protocol.hash,1,4),substr(protocol.hash,29,32),sep="_")
+protocol.hash.panel<-tools::md5sum(
+  list.files(
+    system.file("panels",package = "COVAILworkflow"),
+    full.names = TRUE,
+    pattern = "panels_COVAIL.csv"
+  )
+)
+hashes<-lapply(list(body=protocol.hash.body,panel=protocol.hash.panel),function(i){
+  paste(substr(i,1,4),substr(i,nchar(i)-3,nchar(i)),sep="...")
+})
 ```
-### Version: `r protocol.hash.alias`
+### Version:<br/>Body:   `r hashes$body`<br/>Panel:  `r hashes$panel`
 
 # Reagents
 
