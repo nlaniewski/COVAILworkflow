@@ -117,10 +117,7 @@ COVAILworkflow:::panel.kable()$mix$AIM.extracellular
 #. $\square$ Immediately vortex (setting 5) for a full 10 second count
     + NOTE: ensures maximal, fixed single-cells
 #. $\square$ *Vortex-Genie Shaker*: 20 minutes, room-temperature
-
-  **!!!All subsequent spins: 800xg!!!**
-  **Use SB (without nuclease) for washes**
-    
+<br><br>**!!!All subsequent spins: 800xg!!!** **Use SB (without nuclease) for washes**<br><br>
 #. $\square$ *WASH*: 2 mL **SB**; spin 800xg, 5 minutes, room-temperate; vacuum aspirate supernatant
 #. $\square$ *WASH*: 3 mL **SB**; spin 800xg, 5 minutes, room-temperate; vacuum aspirate supernatant
     + NOTE: Before spinning, take an aliquot for counting: 5 $\mu$L of cells/pool + 15 $\mu$L **SB**

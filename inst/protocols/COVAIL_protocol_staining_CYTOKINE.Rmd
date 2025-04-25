@@ -126,9 +126,7 @@ COVAILworkflow:::panel.kable()$mix$CYTOKINE.intracellular
     + NOTE: ensures maximal, fixed single-cells
 #. $\square$ *Vortex-Genie Shaker*: 20 minutes, room-temperature
     + NOTE: prepare **ICS Mix**
-
-  **!!!All subsequent spins: 800xg!!!**
-    
+<br><br>**!!!All subsequent spins: 800xg!!!**<br><br>
 #. $\square$ *WASH*: 2 mL **PB**; spin 800xg, 5 minutes, room-temperate; vacuum aspirate supernatant
 #. $\square$ *WASH*: 2 mL **PB**; spin 800xg, 5 minutes, room-temperate; vacuum aspirate supernatant
 #. $\square$ Stain: **ICS Mix**; 50 $\mu$L
